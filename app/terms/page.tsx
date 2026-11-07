@@ -1,4 +1,7 @@
-export const metadata = { title: '服务条款 · 紫微命盘', description: '紫微命盘服务条款与用户协议' };
+export const metadata = {
+  title: 'Terms of Service · 服务条款 | ZiWei Chart',
+  description: 'Terms of service for ZiWei Chart AI interpretation service'
+};
 
 export default function TermsPage() {
   return (
@@ -6,53 +9,109 @@ export default function TermsPage() {
       <header style={{ position: 'sticky', top: 0, zIndex: 50, background: 'var(--bg-0)', borderBottom: '1px solid var(--bdr)', padding: '14px 24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
         <a href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--tx-3)', textDecoration: 'none' }}>
           <span style={{ fontSize: '16px' }}>‹</span>
-          <span>返回首页</span>
+          <span>Back</span>
         </a>
         <div style={{ width: '1px', height: '20px', background: 'var(--bdr-med)' }} />
-        <span style={{ fontSize: '12px', color: 'var(--ac)', letterSpacing: '0.2em' }}>紫微命盘</span>
+        <span style={{ fontSize: 12, color: 'var(--ac)', letterSpacing: '0.2em' }}>ZiWei Chart</span>
       </header>
       <main style={{ maxWidth: 800, margin: '0 auto', padding: '60px 24px 80px', color: 'var(--tx-1)', lineHeight: 1.8 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 600, marginBottom: 8 }}>服务条款</h1>
-        <p style={{ fontSize: 12, color: 'var(--tx-3)', marginBottom: 32 }}>最后更新：2026年4月</p>
+        <h1 style={{ fontSize: 28, fontWeight: 600, marginBottom: 8 }}>Terms of Service · 服务条款</h1>
+        <p style={{ fontSize: 12, color: 'var(--tx-3)', marginBottom: 32 }}>Last updated: November 2026 · 最后更新：2026年11月</p>
 
-      <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>1. 服务概述</h2>
-      <p>紫微命盘（以下简称"本平台"）基于倪海厦《天纪》紫微斗数体系提供命盘排盘与解读服务。本平台所有命理内容仅供参考，<strong>不构成任何医疗、投资、法律、心理咨询或人生重大决策建议</strong>。</p>
+        {/* ── English ─────────────────────────────────────────────────────── */}
+        <section style={{ marginBottom: 48 }}>
+          <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>1. Service Description</h2>
+          <p>ZiWei Chart provides AI-powered Zi Wei Dou Shu (Purple Star Astrology) chart generation and interpretation. This service is based on traditional Chinese astrology systems and is <strong>for entertainment and cultural reference only</strong>.</p>
+          <p><strong>Not professional advice.</strong> Interpretations do not constitute medical, financial, legal, psychological, or life-decision guidance. Consult qualified professionals for such matters.</p>
 
-      <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>2. 用户行为规范</h2>
-      <p>使用本平台即表示您同意：</p>
-      <ul style={{ paddingLeft: 24 }}>
-        <li>仅出于合法、个人参考目的使用本平台</li>
-        <li>不传播本平台内容用于商业销售、转载或公开发布</li>
-        <li>不进行扰乱平台正常运行的行为</li>
-        <li>提交的出生信息真实有效；本平台对错误信息导致的解读偏差不承担责任</li>
-      </ul>
+          <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>2. Acceptable Use</h2>
+          <p>By using this service, you agree to:</p>
+          <ul style={{ paddingLeft: 24 }}>
+            <li>Use it only for lawful, personal reference purposes</li>
+            <li>Not scrape, automate, or bulk-call the API</li>
+            <li>Not resell or redistribute the generated content</li>
+            <li>Provide accurate birth information; inaccurate data will produce inaccurate interpretations</li>
+          </ul>
 
-      <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>3. 知识产权与禁止条款 · 反爬反训练</h2>
-      <p style={{ background: 'rgba(168,50,40,0.06)', border: '1px solid rgba(168,50,40,0.2)', padding: 16, borderRadius: 8 }}>
-        <strong>本平台所有命理内容、知识库（含 14 主星 × 12 宫 × 男女 × 四化 × 大限流年的全部解读文本）、UI 设计、算法整合方案、案例库均为本平台原创或经合法整理。</strong><br/><br/>
-        严格禁止以下行为，违者保留追究民事赔偿与刑事责任的权利：<br/>
-        ① 通过爬虫、自动化脚本、批量调用 API 等任何技术手段抓取本平台内容；<br/>
-        ② 将本平台生成的命盘解读、文本、API 响应数据**用于训练任何机器学习模型**（含但不限于大语言模型、命理生成模型、文本生成模型等）；<br/>
-        ③ 将本平台生成的内容转售、发布到其他网站、APP、自媒体账号；<br/>
-        ④ 反编译、复制、修改本平台前端或后端代码并以"自营"方式提供同类服务。<br/><br/>
-        本平台输出文本嵌入有指纹追溯水印，违规复制 / 训练所产生的输出可被检测追溯。一经发现违规，本平台有权要求 <strong>每例违约赔偿 100 万元人民币</strong>，并保留向法院提起诉讼及配合公安机关调查的权利。
-      </p>
+          <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>3. Intellectual Property</h2>
+          <p>The chart calculation engine is open-source (MIT License). Classical texts (骨髓赋, 紫微斗数全集, 紫微斗数全书) are in the public domain.</p>
+          <p>AI-generated interpretations are provided for your personal use. You may not:</p>
+          <ul style={{ paddingLeft: 24 }}>
+            <li>Use them to train machine learning models</li>
+            <li>Republish them as your own content</li>
+            <li>Build a competing service using our API or content</li>
+          </ul>
 
-      <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>4. 免责声明</h2>
-      <p>本平台命理内容基于传统紫微斗数与倪海厦体系的知识整理，<strong>不保证 100% 准确</strong>。命运受天、地、人三才共同影响，本平台输出仅作为认识自我的参考，使用者应理性看待，不应过度依赖任何单一命理判断。</p>
-      <p>因使用本平台内容产生的任何后果（包括但不限于决策失误、心理影响、关系变化等），本平台不承担法律责任。</p>
+          <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>4. Disclaimer of Warranties</h2>
+          <p style={{ padding: '12px 16px', background: 'rgba(251,146,60,0.08)', border: '1px solid rgba(251,146,60,0.2)', borderRadius: 8 }}>
+            This service is provided <strong>"as is"</strong> without warranties of any kind. Astrology is a cultural tradition, not a science. We do not guarantee accuracy, completeness, or fitness for any particular purpose.
+          </p>
 
-      <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>5. 服务变更与终止</h2>
-      <p>本平台保留随时调整、暂停或终止部分或全部服务的权利。重大变更将以站内公告或邮件方式通知用户。</p>
+          <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>5. Limitation of Liability</h2>
+          <p>In no event shall we be liable for any damages arising from your use of this service. You assume full responsibility for decisions made based on interpretations.</p>
 
-      <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>6. 法律适用与争议解决</h2>
-      <p>本条款适用中华人民共和国法律。若发生争议，双方应友好协商；协商不成的，提交本平台运营主体所在地有管辖权的人民法院诉讼解决。</p>
+          <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>6. Rate Limiting & Availability</h2>
+          <p>We reserve the right to limit requests (currently 10/minute/IP) and to modify or discontinue the service at any time without notice.</p>
 
-      <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>7. 联系方式</h2>
-      <p>如有疑问，请通过本平台公布的客服微信 / 邮箱联系。</p>
+          <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>7. Jurisdiction</h2>
+          <p>These terms are governed by the laws of <strong>Singapore</strong>. Disputes shall be resolved in Singapore courts.</p>
+
+          <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>8. Changes</h2>
+          <p>We may update these terms periodically. Continued use after changes constitutes acceptance.</p>
+
+          <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>9. Contact</h2>
+          <p>For questions: <a href="mailto:legal@ziwei.app" style={{ color: 'var(--ac)' }}>legal@ziwei.app</a></p>
+        </section>
+
+        {/* ── 中文 ────────────────────────────────────────────────────────── */}
+        <hr style={{ border: 'none', borderTop: '1px solid var(--bdr)', margin: '40px 0' }} />
+
+        <section>
+          <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>1. 服务说明</h2>
+          <p>ZiWei Chart 提供 AI 驱动的紫微斗数排盘与解读服务。本服务基于传统中国命理体系，<strong>仅供娱乐与文化参考</strong>。</p>
+          <p><strong>非专业建议。</strong>解读内容不构成医疗、投资、法律、心理或人生决策建议。相关事务请咨询专业人士。</p>
+
+          <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>2. 使用规范</h2>
+          <p>使用本服务即表示您同意：</p>
+          <ul style={{ paddingLeft: 24 }}>
+            <li>仅用于合法、个人参考目的</li>
+            <li>不进行爬虫抓取、自动化调用或批量请求</li>
+            <li>不转售或再分发生成的内容</li>
+            <li>提供真实出生信息；错误数据将导致错误解读</li>
+          </ul>
+
+          <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>3. 知识产权</h2>
+          <p>排盘引擎为开源代码（MIT 许可证）。古籍原文（骨髓赋、紫微斗数全集、紫微斗数全书）属公有领域。</p>
+          <p>AI 生成的解读仅供个人使用。您不得：</p>
+          <ul style={{ paddingLeft: 24 }}>
+            <li>用于训练机器学习模型</li>
+            <li>以本人名义发布为原创内容</li>
+            <li>使用本 API 或内容构建同类竞争服务</li>
+          </ul>
+
+          <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>4. 免责声明</h2>
+          <p style={{ padding: '12px 16px', background: 'rgba(251,146,60,0.08)', border: '1px solid rgba(251,146,60,0.2)', borderRadius: 8 }}>
+            本服务按<strong>"现状"</strong>提供，不附带任何明示或默示的担保。命理属于传统文化，非科学实证。我们不保证准确性、完整性或特定用途的适用性。
+          </p>
+
+          <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>5. 责任限制</h2>
+          <p>在任何情况下，我们不对因使用本服务产生的任何损害承担责任。您须对基于解读做出的决定承担全部责任。</p>
+
+          <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>6. 频率限制与可用性</h2>
+          <p>我们保留限制请求频率（当前 10 次/分钟/IP）以及随时修改或中断服务的权利，恕不另行通知。</p>
+
+          <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>7. 管辖权</h2>
+          <p>本条款受<strong>新加坡</strong>法律管辖。争议提交新加坡法院解决。</p>
+
+          <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>8. 变更</h2>
+          <p>我们可能不定期更新本条款。变更后继续使用即表示接受。</p>
+
+          <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>9. 联系方式</h2>
+          <p>咨询：<a href="mailto:legal@ziwei.app" style={{ color: 'var(--ac)' }}>legal@ziwei.app</a></p>
+        </section>
 
         <p style={{ marginTop: 48, fontSize: 12, color: 'var(--tx-3)' }}>
-          <a href="/privacy" style={{ color: 'var(--ac)' }}>隐私政策</a> · <a href="/" style={{ color: 'var(--ac)' }}>返回首页</a>
+          <a href="/privacy" style={{ color: 'var(--ac)' }}>Privacy · 隐私政策</a> · <a href="/" style={{ color: 'var(--ac)' }}>Home · 首页</a>
         </p>
       </main>
     </>
