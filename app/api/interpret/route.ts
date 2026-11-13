@@ -1,5 +1,5 @@
 /**
- * POST /api/interpret — AI 紫微斗数解读（流式 SSE）
+ * POST /api/interpret — 紫微斗数解读（流式 SSE）
  *
  * 请求体:
  * {
@@ -10,6 +10,10 @@
  * 响应: text/event-stream
  *   data: {"delta":{"text":"..."}}
  *   data: [DONE]
+ *
+ * 两级链路（响应头 X-AI-Source 标明实际走了哪级）:
+ *   1. 配置了 API Key → 大模型流式解读（Anthropic / DeepSeek）
+ *   2. 未配置、额度耗尽或调用失败 → 本地规则引擎解读。零成本、命盘数据不出服务器
  *
  * 安全控制:
  * - Rate limiting: 10 req/min/IP（内存计数）
@@ -25,7 +29,8 @@
 
 import { NextRequest } from 'next/server';
 import type { ZiweiChart } from '@/lib/ziwei/types';
-import { retrieveKnowledge, STAR_NAME_EN, PALACE_NAME_EN } from '@/lib/classics/knowledge-base';
+import { retrieveKnowledge } from '@/lib/classics/knowledge-base';
+import { interpretRequest, isRuleEngineAvailable } from '@/lib/interpret/engine';
 import { BRANCHES } from '@/lib/ziwei/constants';
 
 // ─── 配置 ────────────────────────────────────────────────────────────────────
@@ -33,6 +38,8 @@ import { BRANCHES } from '@/lib/ziwei/constants';
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const RATE_LIMIT_MAX_REQUESTS = 10;
 const MAX_TOKENS = 2000;
+/** 规则引擎输出按此长度分片下发，保持前端逐字出现的观感 */
+const RULES_CHUNK = 60;
 
 // ─── Rate Limiter ────────────────────────────────────────────────────────────
 
@@ -125,7 +132,7 @@ function buildSystemPrompt(chart: ZiweiChart): string {
     .map(p => `【${p.bookTitle}·${p.chapterTitle}】${p.text}`)
     .join('\n\n');
 
-  return `你是一位精通紫微斗数的命理师，师承倪海厦《天纪》体系，风格严谨、平和、不夸大。
+  return `你是一位精通紫微斗数的命理师，以《骨髓赋》《紫微斗数全集》《紫微斗数全书》等公版古籍为据，风格严谨、平和、不夸大。
 
 ## 命盘信息
 ${chartSummary}
@@ -142,10 +149,32 @@ ${classicsText}
 6. 保持专业但易懂，避免过度玄学术语`;
 }
 
+// ─── 本地规则引擎（无 Key / 调用失败时的降级链路） ──────────────────────────
+
+function resolveProvider(): { name: 'anthropic' | 'deepseek' | 'rules'; apiKey?: string } {
+  const name = process.env.AI_PROVIDER === 'deepseek' ? 'deepseek' : 'anthropic';
+  const apiKey = name === 'deepseek' ? process.env.DEEPSEEK_API_KEY : process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return { name: 'rules' };
+  return { name, apiKey };
+}
+
+function streamRules(
+  chart: ZiweiChart,
+  question: string,
+  send: (data: object) => void,
+  sendDone: () => void,
+) {
+  const text = interpretRequest(chart, question);
+  for (let i = 0; i < text.length; i += RULES_CHUNK) {
+    send({ delta: { text: text.slice(i, i + RULES_CHUNK) } });
+  }
+  sendDone();
+}
+
 // ─── SSE 流式响应 ────────────────────────────────────────────────────────────
 
 function createSSEStream(
-  systemPrompt: string,
+  chart: ZiweiChart,
   messages: Array<{ role: 'user' | 'assistant'; content: string }>
 ): ReadableStream {
   return new ReadableStream({
@@ -161,30 +190,34 @@ function createSSEStream(
         controller.close();
       };
 
-      const sendError = (msg: string) => {
-        send({ delta: { text: `\n\n⚠️ ${msg}` } });
-        sendDone();
+      const lastQuestion = [...messages].reverse().find(m => m.role === 'user')?.content ?? '';
+
+      // 规则引擎不可用时才会真正报错——理论上不会发生，但降级链路必须有终点
+      const failover = () => {
+        if (isRuleEngineAvailable()) streamRules(chart, lastQuestion, send, sendDone);
+        else {
+          send({ delta: { text: '\n\n⚠️ AI 服务暂时不可用，请稍后重试' } });
+          sendDone();
+        }
       };
 
+      const provider = resolveProvider();
+      if (provider.name === 'rules') {
+        streamRules(chart, lastQuestion, send, sendDone);
+        return;
+      }
+
+      const systemPrompt = buildSystemPrompt(chart);
       try {
-        const provider = process.env.AI_PROVIDER || 'anthropic';
-        const apiKey = provider === 'deepseek'
-          ? process.env.DEEPSEEK_API_KEY
-          : process.env.ANTHROPIC_API_KEY;
+        const ok = provider.name === 'deepseek'
+          ? await streamDeepSeek(provider.apiKey!, systemPrompt, messages, send)
+          : await streamAnthropic(provider.apiKey!, systemPrompt, messages, send);
 
-        if (!apiKey) {
-          sendError('AI 服务未配置，请联系管理员设置 API Key');
-          return;
-        }
-
-        if (provider === 'deepseek') {
-          await streamDeepSeek(apiKey, systemPrompt, messages, send, sendDone, sendError);
-        } else {
-          await streamAnthropic(apiKey, systemPrompt, messages, send, sendDone, sendError);
-        }
+        if (ok) sendDone();
+        else failover();
       } catch (err) {
         console.error('[interpret] Stream error:', err);
-        sendError('AI 服务暂时不可用，请稍后重试');
+        failover();
       }
     },
   });
@@ -197,9 +230,7 @@ async function streamAnthropic(
   systemPrompt: string,
   messages: Array<{ role: 'user' | 'assistant'; content: string }>,
   send: (data: object) => void,
-  sendDone: () => void,
-  sendError: (msg: string) => void,
-) {
+): Promise<boolean> {
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -217,16 +248,11 @@ async function streamAnthropic(
   });
 
   if (!response.ok) {
-    const err = await response.text();
-    console.error('[interpret] Anthropic API error:', err);
-    sendError('AI 服务返回错误');
-    return;
+    console.error('[interpret] Anthropic API error:', response.status);
+    return false;
   }
 
-  if (!response.body) {
-    sendError('AI 服务无响应流');
-    return;
-  }
+  if (!response.body) return false;
 
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
@@ -254,7 +280,7 @@ async function streamAnthropic(
     }
   }
 
-  sendDone();
+  return true;
 }
 
 // ─── DeepSeek 流式调用（备选） ──────────────────────────────────────────────
@@ -264,9 +290,7 @@ async function streamDeepSeek(
   systemPrompt: string,
   messages: Array<{ role: 'user' | 'assistant'; content: string }>,
   send: (data: object) => void,
-  sendDone: () => void,
-  sendError: (msg: string) => void,
-) {
+): Promise<boolean> {
   const allMessages = [
     { role: 'system', content: systemPrompt },
     ...messages,
@@ -287,16 +311,11 @@ async function streamDeepSeek(
   });
 
   if (!response.ok) {
-    const err = await response.text();
-    console.error('[interpret] DeepSeek API error:', err);
-    sendError('AI 服务返回错误');
-    return;
+    console.error('[interpret] DeepSeek API error:', response.status);
+    return false;
   }
 
-  if (!response.body) {
-    sendError('AI 服务无响应流');
-    return;
-  }
+  if (!response.body) return false;
 
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
@@ -325,7 +344,7 @@ async function streamDeepSeek(
     }
   }
 
-  sendDone();
+  return true;
 }
 
 // ─── POST Handler ────────────────────────────────────────────────────────────
@@ -370,17 +389,16 @@ export async function POST(request: NextRequest) {
     return new Response(JSON.stringify({ error: 'No valid messages' }), { status: 400 });
   }
 
-  // Build system prompt with chart context
-  const systemPrompt = buildSystemPrompt(body.chart);
-
-  // Stream response
-  const stream = createSSEStream(systemPrompt, validMessages as Array<{ role: 'user' | 'assistant'; content: string }>);
+  // Stream response：有 Key 走大模型，无 Key 或调用失败自动降级到本地规则引擎
+  const stream = createSSEStream(body.chart, validMessages as Array<{ role: 'user' | 'assistant'; content: string }>);
+  const provider = resolveProvider();
 
   return new Response(stream, {
     headers: {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
       'Connection': 'keep-alive',
+      'X-AI-Source': provider.name,
     },
   });
 }

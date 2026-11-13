@@ -142,7 +142,15 @@ export default function PalaceCell({
               )}>
                 {star.name}
               </span>
-              {star.siHua && <SiHuaBadge siHua={star.siHua} />}
+              {star.siHua && (
+                <SiHuaBadge
+                  siHua={star.siHua}
+                  onClick={e => {
+                    e.stopPropagation();
+                    onSiHuaClick?.(star.name, star.siHua!);
+                  }}
+                />
+              )}
               {overlaySiHua && (
                 <SiHuaBadge
                   siHua={overlaySiHua}
@@ -167,7 +175,15 @@ export default function PalaceCell({
             return (
               <span key={s.name} className="inline-flex items-center text-[9px] text-sky-500/70 leading-tight">
                 {s.name}
-                {s.siHua && <SiHuaBadge siHua={s.siHua} />}
+                {s.siHua && (
+                  <SiHuaBadge
+                    siHua={s.siHua}
+                    onClick={e => {
+                      e.stopPropagation();
+                      onSiHuaClick?.(s.name, s.siHua!);
+                    }}
+                  />
+                )}
                 {overlaySiHua && (
                   <SiHuaBadge
                     siHua={overlaySiHua}
@@ -190,7 +206,15 @@ export default function PalaceCell({
         <div className="flex flex-wrap gap-x-1">
           {shaStars.map(s => (
             <span key={s.name} className="text-[9px] text-red-500/60 leading-tight">
-              {s.name}{s.siHua && <SiHuaBadge siHua={s.siHua} />}
+              {s.name}{s.siHua && (
+                <SiHuaBadge
+                  siHua={s.siHua}
+                  onClick={e => {
+                    e.stopPropagation();
+                    onSiHuaClick?.(s.name, s.siHua!);
+                  }}
+                />
+              )}
             </span>
           ))}
         </div>
